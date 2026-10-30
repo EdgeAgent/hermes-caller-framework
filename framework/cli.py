@@ -1,0 +1,111 @@
+"""CLI: lead add/list, scrub, qualify --mock, book, packet, approve, dial-prep."""
+from __future__ import annotations
+import argparse, json, sys
+from pathlib import Path
+from .state import StateStore
+from . import leads as L, scrub as S, gate as G
+from .dialer import MockDialer
+from .scrub import normalize_phone
+
+def store() -> StateStore:
+    return StateStore(Path(__file__).resolve().parent.parent / ".framework")
+
+def _load_scrub_file(st: StateStore, state: dict):
+    root = Path(__file__).resolve().parent.parent
+    nums = S.load_scrub_numbers(root / "data" / "scrub-list.csv")
+    for n in nums:
+        if n not in state["scrub_numbers"]:
+            state["scrub_numbers"].append(n)
+    return state
+
+def main(argv=None) -> int:
+    p = argparse.ArgumentParser(prog="hermes-caller", description="Hermes Caller Framework — mock dialer, human closes.")
+    sub = p.add_subparsers(dest="cmd")
+    a = sub.add_parser("lead"); la = a.add_subparsers(dest="op")
+    add = la.add_parser("add"); add.add_argument("name"); add.add_argument("--phone", required=True)
+    add.add_argument("--source", required=True); add.add_argument("--source-date", required=True)
+    add.add_argument("--verified", default="unverified"); add.add_argument("--notes", default="")
+    la.add_parser("list")
+    sub.add_parser("scrub")
+    q = sub.add_parser("qualify"); q.add_argument("--lead", required=True); q.add_argument("--mock", action="store_true")
+    q.add_argument("--motivation", default="medium"); q.add_argument("--timeline", default="<90d")
+    q.add_argument("--price", default="flexible"); q.add_argument("--condition", default="average")
+    b = sub.add_parser("book"); b.add_argument("--lead", required=True); b.add_argument("--when", required=True)
+    pk = sub.add_parser("packet"); pk.add_argument("--lead", required=True)
+    ap = sub.add_parser("approve"); ap.add_argument("--confirm", required=True)
+    dp = sub.add_parser("dial-prep"); dp.add_argument("--lead", required=True)
+    sub.add_parser("status")
+    args = p.parse_args(argv)
+    st = store(); state = _load_scrub_file(st, st.load())
+    if args.cmd == "lead" and args.op == "add":
+        try:
+            lead = L.add_lead(state, args.name, args.phone, args.source, args.source_date, args.verified, args.notes)
+        except ValueError as e:
+            print(f"ERROR: {e}"); return 2
+        st.save(state); print(json.dumps(lead, indent=2)); return 0
+    if args.cmd == "lead" and args.op == "list":
+        print(json.dumps(state["leads"], indent=2)); return 0
+    if args.cmd == "scrub":
+        r = S.apply_scrub(state); st.save(state); print(json.dumps(r, indent=2)); return 0
+    if args.cmd == "qualify":
+        if not args.mock:
+            print("ERROR: skeleton only supports --mock qualification (no real calls)."); return 2
+        lead = next((x for x in state["leads"] if x["id"] == args.lead), None)
+        if not lead: print("ERROR: lead not found"); return 2
+        if lead.get("status") == "scrubbed" or S.is_scrubbed(lead["phone"], state["scrub_numbers"]):
+            print(f"REFUSED: {lead['id']} is scrubbed — never call, ever"); return 3
+        sc = L.score_qualification(args.motivation, args.timeline, args.price, args.condition)
+        rec = {"lead_id": lead["id"], "mock": True, "motivation": args.motivation, "timeline": args.timeline,
+               "price": args.price, "condition": args.condition, **sc}
+        state["qualifications"].append(rec); lead["status"] = "qualified"; st.save(state)
+        print(json.dumps(rec, indent=2)); return 0
+    if args.cmd == "book":
+        lead = next((x for x in state["leads"] if x["id"] == args.lead), None)
+        if not lead: print("ERROR: lead not found"); return 2
+        if lead.get("status") == "scrubbed": print("REFUSED: scrubbed"); return 3
+        bk = {"id": f"booking-{len(state['bookings'])+1}", "lead_id": lead["id"], "when": args.when, "status": "booked-pending-human-confirmation"}
+        state["bookings"].append(bk); st.save(state); print(json.dumps(bk, indent=2)); return 0
+    if args.cmd == "packet":
+        lead = next((x for x in state["leads"] if x["id"] == args.lead), None)
+        if not lead: print("ERROR: lead not found"); return 2
+        qual = [q for q in state["qualifications"] if q["lead_id"] == lead["id"]]
+        bk = [b for b in state["bookings"] if b["lead_id"] == lead["id"]]
+        payload = {"action": "send", "to": "human-closer", "lead_id": lead["id"],
+                   "message": f"Handoff packet for {lead['name']} ({lead['phone']}): source {lead['source']} on {lead['source_date']}, verified={lead['verified']}. Qualifications: {qual}. Bookings: {bk}. HUMAN CLOSES — do not auto-send or auto-close."}
+        packet = {"id": f"packet-{len(state['packets'])+1}", "lead_id": lead["id"], "lead": lead,
+                  "qualifications": qual, "bookings": bk, "proposed_action_payload": payload,
+                  "note": "REVIEW THIS EXACT PACKET FIRST. Nothing is sent until approve --confirm <packet_id>."}
+        state["packets"].append(packet); st.save(state); print(json.dumps(packet, indent=2)); return 0
+    if args.cmd == "approve":
+        packet = next((x for x in state["packets"] if x["id"] == args.confirm), None)
+        if not packet: print("ERROR: packet not found — nothing approved"); return 2
+        print("APPROVING EXACT PACKET (reviewed above / in packet command output):")
+        print(json.dumps(packet["proposed_action_payload"], indent=2))
+        r = G.approve_packet(state, packet); st.save(state); print(json.dumps(r, indent=2))
+        print("Approved ONLY for this exact payload. The human still closes the deal."); return 0
+    if args.cmd == "dial-prep":
+        lead = next((x for x in state["leads"] if x["id"] == args.lead), None)
+        if not lead: print("ERROR: lead not found"); return 2
+        # Gate first: a real call is dangerous, and the skeleton has no approval path to dial.
+        chk = G.check(state, "call", {"lead_id": lead["id"], "phone": lead["phone"]})
+        blocked_payload = None
+        if not chk["allowed"]:
+            print(f"BLOCKED (gate): {chk['reason']} — mock dial-prep only, no real call placed.")
+            blocked_payload = {"lead_id": lead["id"], "phone": lead["phone"]}
+        try:
+            rec = MockDialer().would_call(st, lead)
+        except ValueError as e:
+            print(f"ERROR: {e}"); return 3
+        # MockDialer already saved; re-load and re-apply the gate block so it is not lost.
+        if blocked_payload is not None:
+            fresh = st.load()
+            if not any(e.get("hash") == chk.get("hash") for e in fresh.get("blocked_events", [])):
+                fresh.setdefault("blocked_events", []).append({"action": "call", "hash": chk.get("hash"), "payload": blocked_payload})
+            st.save(fresh)
+        print(json.dumps(rec, indent=2)); print("MOCK ONLY: no real number was dialed."); return 0
+    if args.cmd == "status":
+        print(json.dumps({k: len(v) for k, v in state.items() if isinstance(v, list)}, indent=2)); return 0
+    p.print_help(); return 0
+
+if __name__ == "__main__":
+    sys.exit(main())

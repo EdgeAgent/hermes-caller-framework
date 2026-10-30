@@ -1,0 +1,11 @@
+# Model router — FREE ONLY. Never silently upgrade to paid.
+free_only: true
+default: ollama-local
+models:
+  - name: ollama-local
+    provider: ollama
+    cost: 0
+  - name: openrouter-free
+    provider: openrouter
+    cost: 0
+    note: free tier only; if no free model is available, pause and tell the human — never upgrade silently.
