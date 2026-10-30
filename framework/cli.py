@@ -12,6 +12,7 @@ from .model import qualify_with_model
 from .doctor import check as doctor_check
 from .receipts import append as receipt_append
 from .inbound import handle_inbound
+from .warrior import objection_response, followup, advance_pipeline, warrior_score
 from .scrub import normalize_phone
 
 def store() -> StateStore:
@@ -59,6 +60,7 @@ def main(argv=None) -> int:
     mq = sub.add_parser("model-qualify"); mq.add_argument("--lead", required=True); mq.add_argument("--provider", default="openrouter"); mq.add_argument("--notes", required=True)
     ib = sub.add_parser("inbound"); ib.add_argument("--persona", default="walkin_clinic"); ib.add_argument("--caller", required=True)
     ib.add_argument("--intent", default="greet"); ib.add_argument("--slot", default=None); ib.add_argument("--existing-number", default=None)
+    wa = sub.add_parser("warrior"); wa.add_argument("--objection", default=None); wa.add_argument("--followup-day", type=int, default=None); wa.add_argument("--stage", default="new"); wa.add_argument("--to", default=None); wa.add_argument("--activities", type=int, default=0); wa.add_argument("--qualified", action="store_true"); wa.add_argument("--booked", action="store_true")
     sub.add_parser("status")
     args = p.parse_args(argv)
     st = store(); state = _load_scrub_file(st, st.load())
@@ -132,6 +134,13 @@ def main(argv=None) -> int:
     if args.cmd == "inbound":
         r = handle_inbound(args.caller, args.persona, args.intent, slot=args.slot, existing_number=args.existing_number)
         receipt_append(st.dir, "inbound", r); print(json.dumps(r, indent=2)); return 0
+    if args.cmd == "warrior":
+        out = {}
+        if args.objection: out["objection"] = objection_response(args.objection)
+        if args.followup_day is not None: out["followup"] = followup(args.followup_day, args.stage)
+        if args.to: out["pipeline"] = advance_pipeline(args.stage, args.to)
+        out["score"] = warrior_score(args.activities, args.qualified, args.booked)
+        print(json.dumps(out, indent=2)); return 0
     if args.cmd == "book":
         lead = next((x for x in state["leads"] if x["id"] == args.lead), None)
         if not lead: print("ERROR: lead not found"); return 2

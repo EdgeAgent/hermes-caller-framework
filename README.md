@@ -3,7 +3,7 @@
 ![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python)
 ![License: MIT](https://img.shields.io/badge/License-MIT-2dd4bf?style=flat-square)
 ![Local-first](https://img.shields.io/badge/Local--first-yes-2dd4bf?style=flat-square)
-![Tests: 51 passing](https://img.shields.io/badge/Tests-51%20passing-3fb950?style=flat-square)
+![Tests: 59 passing](https://img.shields.io/badge/Tests-59%20passing-3fb950?style=flat-square)
 ![Status: v1.1 production-ready code](https://img.shields.io/badge/Status-v1.1-3fb950?style=flat-square)
 ![Dialer: Gated real](https://img.shields.io/badge/Dialer-gated--real-3fb950?style=flat-square)
 
@@ -21,6 +21,14 @@
 → verdict DEAL, buyer profit $60,000, open math in the packet. `python3 run.py wholesale-script --part probate` prints the respectful probate script.
 
 Wholesale is NOT generic sales: seller leads, not buyer leads. Qualification = motivation + timeline + authority + open deal math. Probate without confirmed trustee/executor = HOLD-probate, no offer pitch, ever. Assignment fee is disclosed in the packet, never hidden. Ontario: assignment model needs a lawyer / RECO check before use. This is a style/workflow model in Kevin's own name — never presented as Maximilian Dier or Assigns, never his results, never harvested numbers.
+
+## v1.3 — SALES REP WARRIOR (NEW)
+
+`python3 run.py warrior --objection too-expensive` → math-first answer, not a pitch.
+`python3 run.py warrior --followup-day 3 --stage contacted` → value follow-up. Day 30 → STOP, hand to human.
+`python3 run.py warrior --stage human-closes --to won` → allowed. `--stage qualified --to won` → BLOCKED, human must close first.
+
+Warrior = prepared, persistent, objection-ready, follow-up disciplined (max 4 touches: day 0, 3, 7, 14). NOT pressure closes, NOT harassment, NOT ignoring opt-outs — optout is terminal, scrubbed never advances, and no score ever overrides scrub, gate, or human-close.
 
 ## v1.1 — INBOUND + BOOKING + BridgeConnect (NEW)
 
@@ -153,7 +161,7 @@ This is not legal advice.
 
 ## Honest status — v1.1
 
-- Tests: 51 passing (7 core + 5 branding + 8 wholesale + 5 real-dialer + 10 personas + 8 production + 8 inbound)
+- Tests: 59 passing (7 core + 5 branding + 8 wholesale + 5 real-dialer + 10 personas + 8 production + 8 inbound)
 - Real model runner: yes (OpenRouter / Ollama, validated, no silent mock fallback)
 - Real dialer: gated adapter built, no real call placed yet
 - Inbound booking + BridgeConnect: built, mock calendar + TwiML, real bridging only inside a real call
