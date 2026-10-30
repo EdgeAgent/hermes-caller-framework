@@ -1,7 +1,7 @@
 """Mock dialer — logs 'would call' and NEVER dials a real number.
 
-A real Twilio/Vapi adapter is a STUB only (see adapters.py): no keys,
-no calls, no network. Real calling needs keys + compliance + approval.
+A real Twilio/Vapi adapter lives in real_dialer.py (gated): no keys in code,
+dry-run default. Real calling needs keys + compliance + approval.
 """
 from __future__ import annotations
 from .scrub import is_scrubbed, normalize_phone
@@ -16,7 +16,5 @@ class MockDialer:
         store.save(state)
         return rec
 
-class RealDialerStub:
-    """Bring your own keys. Not wired, never called by the skeleton."""
-    def call(self, *a, **k):
-        raise RuntimeError("Real dialer NOT configured: add Twilio/Vapi keys, DNC API, and compliance review first. See COMPLIANCE.md.")
+# Real dialing lives in framework/real_dialer.py (gated, dry-run default).
+# Nothing in this file dials.

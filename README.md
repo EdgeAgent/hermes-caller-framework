@@ -4,8 +4,8 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-2dd4bf?style=flat-square)
 ![Local-first](https://img.shields.io/badge/Local--first-yes-2dd4bf?style=flat-square)
 ![Tests: 51 passing](https://img.shields.io/badge/Tests-51%20passing-3fb950?style=flat-square)
-![Status: Skeleton](https://img.shields.io/badge/Status-skeleton-ffd65a?style=flat-square)
-![Dialer: Mock only](https://img.shields.io/badge/Dialer-mock%20only-ff7b72?style=flat-square)
+![Status: v1.1 production-ready code](https://img.shields.io/badge/Status-v1.1-3fb950?style=flat-square)
+![Dialer: Gated real](https://img.shields.io/badge/Dialer-gated--real-3fb950?style=flat-square)
 
 <p align="center">
   <img src="docs/assets/hero.png" alt="Hermes Caller — Agent Phone for Lead Closing banner" width="100%" />
@@ -38,9 +38,9 @@ Inbound is the opposite direction: patient calls YOU. Book a mock slot, or Bridg
 
 Production checklist, honest: code is production-grade (validated model output, hash-chained receipts, doctor, .env.example, gate + scrub + packet enforced, no keys in code). Deployment is NOT done until YOU do: provider account + keys in env (Secure Vault, never chat), compliance review, DNC check, your test number first, one approved packet per real call. No real call has been placed by this repo yet.
 
-## Persona library — NEW, elite production grade (6 style packs, 1 core)
+## Persona library — 8 style packs, 1 core
 
-`python3 run.py persona list` → wholesale, realtor, agency, local_service, clinic, generic_sales
+`python3 run.py persona list` → wholesale, realtor, agency, local_service, clinic, dental, walkin_clinic, generic_sales
 `python3 run.py persona show --persona realtor` → buyer, pains, language, opening, discovery, objections, close, compliance, forbidden
 `python3 run.py persona qualify --persona realtor --lead lead-1 --motivation high --timeline "<30d" --budget-fit good --area-fit good` → DEAL
 
@@ -60,11 +60,7 @@ books appointments, and hands a packet to a human closer — the human
 closes the deal. That is the RunItRemote-style job, as a framework
 you can hand to Hermes.
 
-Honest limit, right up front: **in this skeleton it is NOT a real
-phone dialer.** The dialer is mock only (`would_call_mock`,
-`dialed: false`, $0). No real call is placed, no real sale is made.
-Real calling needs Twilio/Vapi keys, a DNC API check, a CRM, and a
-compliance review first — see "What to add next for real calls" below.
+Honest limit, right up front: **mock is still the default.** `dial-prep` and `call --dry-run` never dial. A real call needs Twilio/Vapi keys in env, an existing approved packet, scrub passed, and your test number first — see v1.0 above. No real call has been placed by this repo yet, and deployment is your steps in PRODUCTION.md.
 
 Parallel to Battle Court, built for Hermes: a lead list goes in, scrub
 filter runs, qualification scores it, booking is drafted, and a handoff
@@ -87,9 +83,9 @@ scores, and drafts — autonomously, up to a hard gate.
 
 ![Architecture diagram](docs/assets/architecture.png)
 
-CLI → Scrub → Gate → Dialer (mock) → Skills, all reading and writing
-the same local state (`.framework/state.json`). Nothing leaves the
-machine. The gate sits between the packet and any send/call/charge/
+CLI → Scrub → Gate → Model / Wholesale / Personas / Inbound → RealDialer (gated) → Skills, all reading and writing
+the same local state (`.framework/state.json`) + hash-chained receipts (`.framework/receipts.jsonl`). Nothing leaves the
+machine except a real model call (OpenRouter/Ollama, your key) or a real gated call (Twilio/Vapi, your keys). The gate sits between the packet and any send/call/charge/
 close — no approval, no action.
 
 ## What "autonomous" means here — honestly
@@ -119,7 +115,7 @@ python run.py approve --confirm packet-1
 ## Screenshots — the actual CLI (skeleton, mock, $0, no real calls)
 
 These are real captures of the real CLI running in a clean demo
-folder — text output first, rendered to PNG. Regenerate them with
+folder (v0 captures, commands still valid) — text output first, rendered to PNG. Regenerate them with
 `python3 scripts/capture_screenshots.py`. Branding art is generated
 with `python3 scripts/make_assets.py` (PIL only, original art, no
 copied logos).
@@ -147,7 +143,7 @@ Text capture: [`docs/screenshots/qualify-book-packet.txt`](docs/screenshots/qual
 Local-first, file-based state, no dependencies, mock dialer ($0).
 Models: Ollama local + OpenRouter free tier only (`router.yaml`,
 free-only filter — never silently upgrades to paid). Twilio/Vapi are
-STUBS only: no keys, no real calls, bring your own keys later.
+GATED adapters (framework/real_dialer.py): no keys in code, dry-run default, real only with keys + approved packet.
 
 ## Compliance
 
@@ -155,15 +151,14 @@ See COMPLIANCE.md: business hours only, DNC/scrub absolute, opt-out
 on first request, identify yourself, no robocalls without consent.
 This is not legal advice.
 
-## Honest status — skeleton v0.1.0-skeleton (bottom, not headline)
+## Honest status — v1.1
 
-- Mock dialer only. $0. No real calls, no real sales, no pricing,
-  no payment system — none invented.
-- No real model runners yet; qualification in the skeleton is mock.
-- No Twilio/Vapi wiring, no DNC API, no CRM yet.
+- Tests: 51 passing (7 core + 5 branding + 8 wholesale + 5 real-dialer + 10 personas + 8 production + 8 inbound)
+- Real model runner: yes (OpenRouter / Ollama, validated, no silent mock fallback)
+- Real dialer: gated adapter built, no real call placed yet
+- Inbound booking + BridgeConnect: built, mock calendar + TwiML, real bridging only inside a real call
+- No pricing, no payment system, no CRM, no DNC API — none invented
 
 ## What to add next for real calls
 
-Twilio/Vapi keys (your own env, never committed), a DNC API check,
-a CRM connection, a compliance review for your jurisdiction, and a
-real Windows / live-call test with consenting test numbers first.
+Twilio/Vapi keys (your own env, never committed), a DNC API check, a CRM connection, a compliance review for your jurisdiction, and a real live-call test with your own test number first.

@@ -1,3 +1,7 @@
+# LEGACY — v0 bootstrap only. DO NOT use this file to rebuild the current repo.
+# Current version is v1.1 (51 tests, personas, wholesale, real model, real gated dialer, inbound + BridgeConnect).
+# To get the current version, clone https://github.com/EdgeAgent/hermes-caller-framework — do not re-run the v0 bootstrap below, it recreates only the skeleton.
+
 # Copy-paste start here — Hermes Caller Framework
 
 **How to use this file in ONE paste:** copy this whole file and paste it

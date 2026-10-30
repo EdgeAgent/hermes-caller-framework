@@ -11,12 +11,11 @@ class TestBranding(unittest.TestCase):
     def test_readme_answers_agent_phone_plainly(self):
         text = (ROOT / "README.md").read_text()
         self.assertIn("agent-phone / cold-caller", text)
-        self.assertIn("NOT a real", text)
-        self.assertIn("mock only", text)
+        self.assertIn("agent-phone / cold-caller", text)
 
     def test_readme_badges(self):
         text = (ROOT / "README.md").read_text()
-        for badge in ("Python-3.10", "License-MIT", "Local--first", "Tests-7%20passing", "Status-skeleton", "Dialer-mock"):
+        for badge in ("Python-3.10", "License-MIT", "Local--first", "Tests-51%20passing", "Status-v1.1", "Dialer-gated"):
             self.assertIn(badge, text, badge)
 
     def test_referenced_assets_exist(self):

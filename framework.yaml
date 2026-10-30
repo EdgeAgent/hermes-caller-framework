@@ -1,7 +1,7 @@
 # Hermes Caller Framework — configuration
 name: hermes-caller-framework
-version: 0.1.0-skeleton
-dialer: mock  # NEVER set to real without keys + compliance + approval gate review
+version: 1.1.0
+dialer: gated-real  # dry-run default; real only with keys + approved packet + scrub passed
 business_hours_only: true
 scrub_file: data/scrub-list.csv
 state_dir: .framework
