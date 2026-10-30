@@ -15,7 +15,7 @@ class TestBranding(unittest.TestCase):
 
     def test_readme_badges(self):
         text = (ROOT / "README.md").read_text()
-        for badge in ("Python-3.10", "License-MIT", "Local--first", "Tests-59%20passing", "Status-v1.1", "Dialer-gated"):
+        for badge in ("Python-3.10", "License-MIT", "Local--first", "Tests-65%20passing", "Status-v1.1", "Dialer-gated"):
             self.assertIn(badge, text, badge)
 
     def test_referenced_assets_exist(self):

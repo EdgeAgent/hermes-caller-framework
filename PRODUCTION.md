@@ -1,11 +1,15 @@
-# Hermes Caller v1.3 — Production Readiness
+# Hermes Caller v2.0 — Full Product (live call still pending)
 
 ## What is production-ready
 - CLI: lead, scrub, qualify (mock), model-qualify (real OpenRouter/Ollama, validated JSON), wholesale, persona list/show/qualify, packet, approve, dial-prep, call (dry-run + real gated), status, doctor
 - Gates: scrub never-call, packet approval for exact payload, probate HOLD, wholesale buyer-profit gate, clinic strict gate
 - Receipts: .framework/receipts.jsonl, hash-chained, verify breaks on tamper
 - Config: .env.example only, keys in env, never in code/chat/repo
-- Tests: 59 passing (7 core + 5 branding + 8 wholesale + 5 real-dialer + 10 personas + 8 production + 8 inbound + 8 warrior)
+- Tests: 65 passing (7 core + 5 branding + 8 wholesale + 5 real-dialer + 10 personas + 8 production + 8 inbound + 8 warrior + 6 product)
+- Dashboard: http://127.0.0.1:8768, read-only
+- Real calendar: .framework/calendar.json, conflict + cancel
+- Installer: bash install.sh
+- STILL PENDING: live Twilio/Vapi test call to your number, with approved packet — until that is proven, this is NOT called 'done'
 - Warrior: 8 objections, 4-touch cadence, pipeline with human-close gate, optout terminal
 - Inbound: dental + walkin_clinic booking, BridgeConnect to existing number (TwiML, mock dialed=False)
 

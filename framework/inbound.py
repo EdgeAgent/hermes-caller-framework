@@ -34,9 +34,11 @@ def handle_inbound(caller_phone: str, persona: str, intent: str, slot: str = Non
                 "twiml": twiml_bridge(existing_number), "dialed": False,
                 "note": "MOCK: in a real Twilio call this TwiML bridges the caller to the existing number."}
     if intent == "book":
+        # Real calendar is the source of truth now; MOCK_SLOTS is only the
+        # suggested list when no slot is given. A slot not in the suggestion
+        # list is NOT invalid — it is booked if free in the real calendar.
         if not slot: return {"direction": "inbound", "action": "ask_slot", "available_slots": MOCK_SLOTS}
         if slot in booked: return {"direction": "inbound", "action": "slot_taken", "slot": slot, "available_slots": [s for s in MOCK_SLOTS if s not in booked]}
-        if slot not in MOCK_SLOTS: return {"direction": "inbound", "action": "slot_invalid", "slot": slot, "available_slots": MOCK_SLOTS}
         return {"direction": "inbound", "action": "booked", "caller": caller_phone, "persona": persona, "slot": slot,
                 "confirmation": f"Booked {slot} for {caller_phone} ({persona}). Human staff confirm by callback — no diagnosis or medical advice given."}
     return {"direction": "inbound", "action": "greet", "persona": persona,
