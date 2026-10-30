@@ -2,7 +2,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from framework.personas import PERSONAS, list_personas, get_persona, score_persona
 def test_six_personas():
-    assert set(list_personas()) == {"wholesale", "realtor", "agency", "local_service", "clinic", "generic_sales"}
+    assert set(list_personas()) == {"wholesale", "realtor", "agency", "local_service", "clinic", "dental", "walkin_clinic", "generic_sales"}
 def test_every_persona_has_opening_optout_and_close():
     for pid, p in PERSONAS.items():
         assert p["opening"] and p["close"] and p["discovery"] and p["objections"] and p["forbidden"] and p["compliance"]
@@ -20,7 +20,7 @@ def test_unknown_persona_rejected():
     try: get_persona("nope"); assert False
     except ValueError as e: assert "unknown persona" in str(e)
 def test_each_persona_has_distinct_pains():
-    pains = [tuple(p["pains"]) for p in PERSONAS.values()]; assert len(set(pains)) == 6
+    pains = [tuple(p["pains"]) for p in PERSONAS.values()]; assert len(set(pains)) == 8
 def test_local_service_is_specific_not_generic():
     assert "specific" in get_persona("local_service")["language"].lower()
 if __name__ == "__main__":
