@@ -5,6 +5,7 @@ from pathlib import Path
 from .state import StateStore
 from . import leads as L, scrub as S, gate as G
 from .dialer import MockDialer
+from .wholesale import qualify_wholesale, SCRIPT
 from .scrub import normalize_phone
 
 def store() -> StateStore:
@@ -34,6 +35,12 @@ def main(argv=None) -> int:
     pk = sub.add_parser("packet"); pk.add_argument("--lead", required=True)
     ap = sub.add_parser("approve"); ap.add_argument("--confirm", required=True)
     dp = sub.add_parser("dial-prep"); dp.add_argument("--lead", required=True)
+    w = sub.add_parser("wholesale"); w.add_argument("--lead", required=True); w.add_argument("--mock", action="store_true")
+    w.add_argument("--motivation", default="medium"); w.add_argument("--timeline", default="<90d")
+    w.add_argument("--authority", default="owner"); w.add_argument("--probate", action="store_true")
+    w.add_argument("--price", type=float, required=True); w.add_argument("--repairs", type=float, default=0)
+    w.add_argument("--arv", type=float, required=True); w.add_argument("--fee", type=float, required=True)
+    ws = sub.add_parser("wholesale-script"); ws.add_argument("--part", default="opening")
     sub.add_parser("status")
     args = p.parse_args(argv)
     st = store(); state = _load_scrub_file(st, st.load())
@@ -59,6 +66,19 @@ def main(argv=None) -> int:
                "price": args.price, "condition": args.condition, **sc}
         state["qualifications"].append(rec); lead["status"] = "qualified"; st.save(state)
         print(json.dumps(rec, indent=2)); return 0
+    if args.cmd == "wholesale":
+        if not args.mock: print("ERROR: wholesale skeleton only supports --mock (no real calls)."); return 2
+        lead = next((x for x in state["leads"] if x["id"] == args.lead), None)
+        if not lead: print("ERROR: lead not found"); return 2
+        if lead.get("status") == "scrubbed" or S.is_scrubbed(lead["phone"], state["scrub_numbers"]):
+            print(f"REFUSED: {lead['id']} is scrubbed — never call, ever"); return 3
+        rec = {"lead_id": lead["id"], "mode": "wholesale", "mock": True, "motivation": args.motivation,
+               "timeline": args.timeline, "authority": args.authority, "probate": args.probate,
+               **qualify_wholesale(args.motivation, args.timeline, args.authority, args.probate, args.price, args.repairs, args.arv, args.fee)}
+        state["qualifications"].append(rec); lead["status"] = "wholesale-" + rec["verdict"].lower(); st.save(state)
+        print(json.dumps(rec, indent=2)); return 0
+    if args.cmd == "wholesale-script":
+        print(SCRIPT.get(args.part, "ERROR: part must be opening|motivation|open_math|probate|close_human")); return 0
     if args.cmd == "book":
         lead = next((x for x in state["leads"] if x["id"] == args.lead), None)
         if not lead: print("ERROR: lead not found"); return 2

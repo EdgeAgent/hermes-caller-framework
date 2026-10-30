@@ -15,6 +15,13 @@
   <img src="docs/assets/icon.png" alt="Hermes Caller icon" width="96" />
 </p>
 
+## Wholesale mode — NEW (Dier workflow model, not Dier himself)
+
+`python3 run.py wholesale --lead lead-1 --mock --motivation high --timeline "<30d" --authority owner --price 200000 --repairs 30000 --arv 300000 --fee 10000`
+→ verdict DEAL, buyer profit $60,000, open math in the packet. `python3 run.py wholesale-script --part probate` prints the respectful probate script.
+
+Wholesale is NOT generic sales: seller leads, not buyer leads. Qualification = motivation + timeline + authority + open deal math. Probate without confirmed trustee/executor = HOLD-probate, no offer pitch, ever. Assignment fee is disclosed in the packet, never hidden. Ontario: assignment model needs a lawyer / RECO check before use. This is a style/workflow model in Kevin's own name — never presented as Maximilian Dier or Assigns, never his results, never harvested numbers.
+
 ## What this is — is this an agent phone / cold caller?
 
 Yes. Plainly: **this IS an agent-phone / cold-caller framework.**
