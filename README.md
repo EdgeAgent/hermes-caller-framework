@@ -22,6 +22,14 @@
 
 Wholesale is NOT generic sales: seller leads, not buyer leads. Qualification = motivation + timeline + authority + open deal math. Probate without confirmed trustee/executor = HOLD-probate, no offer pitch, ever. Assignment fee is disclosed in the packet, never hidden. Ontario: assignment model needs a lawyer / RECO check before use. This is a style/workflow model in Kevin's own name — never presented as Maximilian Dier or Assigns, never his results, never harvested numbers.
 
+## Persona library — NEW, elite production grade (6 style packs, 1 core)
+
+`python3 run.py persona list` → wholesale, realtor, agency, local_service, clinic, generic_sales
+`python3 run.py persona show --persona realtor` → buyer, pains, language, opening, discovery, objections, close, compliance, forbidden
+`python3 run.py persona qualify --persona realtor --lead lead-1 --motivation high --timeline "<30d" --budget-fit good --area-fit good` → DEAL
+
+Same core for all: scrub → qualify → score → packet → human closes. Only the style changes per vertical. Wholesale still uses open deal-math + probate HOLD (see wholesale.py). Clinic is strictest: no patient data, no medical claims, legal review before any live list. No persona impersonates a real person.
+
 ## Real phone calls — NEW (adapter built, no real call yet)
 
 `python3 run.py call --lead lead-1 --provider twilio --dry-run` → shows what WOULD be called, dialed: false. Always.

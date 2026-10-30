@@ -7,6 +7,7 @@ from . import leads as L, scrub as S, gate as G
 from .dialer import MockDialer
 from .wholesale import qualify_wholesale, SCRIPT
 from .real_dialer import place_real_call
+from .personas import list_personas, get_persona, score_persona
 from .scrub import normalize_phone
 
 def store() -> StateStore:
@@ -44,6 +45,12 @@ def main(argv=None) -> int:
     ws = sub.add_parser("wholesale-script"); ws.add_argument("--part", default="opening")
     c = sub.add_parser("call"); c.add_argument("--lead", required=True); c.add_argument("--provider", default="twilio")
     c.add_argument("--dry-run", action="store_true"); c.add_argument("--real", action="store_true"); c.add_argument("--packet", default=None)
+    pe = sub.add_parser("persona"); pea = pe.add_subparsers(dest="op")
+    pea.add_parser("list")
+    sh = pea.add_parser("show"); sh.add_argument("--persona", required=True)
+    pq = pea.add_parser("qualify"); pq.add_argument("--persona", required=True); pq.add_argument("--lead", required=True)
+    pq.add_argument("--motivation", default="medium"); pq.add_argument("--timeline", default="<90d")
+    pq.add_argument("--budget-fit", default="unknown"); pq.add_argument("--area-fit", default="unknown"); pq.add_argument("--capacity-fit", default="unknown")
     sub.add_parser("status")
     args = p.parse_args(argv)
     st = store(); state = _load_scrub_file(st, st.load())
@@ -89,6 +96,17 @@ def main(argv=None) -> int:
         print(json.dumps(r, indent=2))
         if not args.real: print("DRY RUN — no call placed. First real call needs: provider account + keys in env + approved packet + YOUR test number first."); return 0
         return 0 if r.get("dialed") else 3
+    if args.cmd == "persona" and args.op == "list":
+        print("\n".join(list_personas())); return 0
+    if args.cmd == "persona" and args.op == "show":
+        import json as _j; print(_j.dumps(get_persona(args.persona), indent=2)); return 0
+    if args.cmd == "persona" and args.op == "qualify":
+        lead = next((x for x in state["leads"] if x["id"] == args.lead), None)
+        if not lead: print("ERROR: lead not found"); return 2
+        if lead.get("status") == "scrubbed" or S.is_scrubbed(lead["phone"], state["scrub_numbers"]):
+            print(f"REFUSED: {lead['id']} is scrubbed — never call, ever"); return 3
+        rec = {"lead_id": lead["id"], "mock": True, **score_persona(args.persona, args.motivation, args.timeline, args.budget_fit, args.area_fit, args.capacity_fit)}
+        state["qualifications"].append(rec); st.save(state); print(json.dumps(rec, indent=2)); return 0
     if args.cmd == "book":
         lead = next((x for x in state["leads"] if x["id"] == args.lead), None)
         if not lead: print("ERROR: lead not found"); return 2
