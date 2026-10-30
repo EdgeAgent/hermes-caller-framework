@@ -30,7 +30,7 @@ def test_receipt_chain_verifies_and_breaks_on_tamper():
         assert verify(Path(d))["ok"] is False
 def test_doctor_reports_presence_not_values():
     r = check(); assert "OPENROUTER_API_KEY" in r["env_present_only"] and isinstance(r["env_present_only"]["OPENROUTER_API_KEY"], bool)
-    assert len(r["personas"]) == 6
+    assert len(r["personas"]) == 8
 def test_doctor_real_call_ready_false_without_keys():
     for k in ["TWILIO_ACCOUNT_SID", "VAPI_API_KEY"]: os.environ.pop(k, None)
     assert check()["real_call_ready"] is False

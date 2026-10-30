@@ -11,6 +11,7 @@ from .personas import list_personas, get_persona, score_persona
 from .model import qualify_with_model
 from .doctor import check as doctor_check
 from .receipts import append as receipt_append
+from .inbound import handle_inbound
 from .scrub import normalize_phone
 
 def store() -> StateStore:
@@ -56,6 +57,8 @@ def main(argv=None) -> int:
     pq.add_argument("--budget-fit", default="unknown"); pq.add_argument("--area-fit", default="unknown"); pq.add_argument("--capacity-fit", default="unknown")
     d = sub.add_parser("doctor")
     mq = sub.add_parser("model-qualify"); mq.add_argument("--lead", required=True); mq.add_argument("--provider", default="openrouter"); mq.add_argument("--notes", required=True)
+    ib = sub.add_parser("inbound"); ib.add_argument("--persona", default="walkin_clinic"); ib.add_argument("--caller", required=True)
+    ib.add_argument("--intent", default="greet"); ib.add_argument("--slot", default=None); ib.add_argument("--existing-number", default=None)
     sub.add_parser("status")
     args = p.parse_args(argv)
     st = store(); state = _load_scrub_file(st, st.load())
@@ -126,6 +129,9 @@ def main(argv=None) -> int:
         except ValueError as e: print(f"ERROR: {e}"); return 2
         rec = {"lead_id": lead["id"], "model": True, **m}; state["qualifications"].append(rec); st.save(state)
         receipt_append(st.dir, "model-qualify", rec); print(json.dumps(rec, indent=2)); return 0
+    if args.cmd == "inbound":
+        r = handle_inbound(args.caller, args.persona, args.intent, slot=args.slot, existing_number=args.existing_number)
+        receipt_append(st.dir, "inbound", r); print(json.dumps(r, indent=2)); return 0
     if args.cmd == "book":
         lead = next((x for x in state["leads"] if x["id"] == args.lead), None)
         if not lead: print("ERROR: lead not found"); return 2

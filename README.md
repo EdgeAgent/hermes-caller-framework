@@ -3,7 +3,7 @@
 ![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python)
 ![License: MIT](https://img.shields.io/badge/License-MIT-2dd4bf?style=flat-square)
 ![Local-first](https://img.shields.io/badge/Local--first-yes-2dd4bf?style=flat-square)
-![Tests: 43 passing](https://img.shields.io/badge/Tests-43%20passing-3fb950?style=flat-square)
+![Tests: 51 passing](https://img.shields.io/badge/Tests-51%20passing-3fb950?style=flat-square)
 ![Status: Skeleton](https://img.shields.io/badge/Status-skeleton-ffd65a?style=flat-square)
 ![Dialer: Mock only](https://img.shields.io/badge/Dialer-mock%20only-ff7b72?style=flat-square)
 
@@ -21,6 +21,14 @@
 → verdict DEAL, buyer profit $60,000, open math in the packet. `python3 run.py wholesale-script --part probate` prints the respectful probate script.
 
 Wholesale is NOT generic sales: seller leads, not buyer leads. Qualification = motivation + timeline + authority + open deal math. Probate without confirmed trustee/executor = HOLD-probate, no offer pitch, ever. Assignment fee is disclosed in the packet, never hidden. Ontario: assignment model needs a lawyer / RECO check before use. This is a style/workflow model in Kevin's own name — never presented as Maximilian Dier or Assigns, never his results, never harvested numbers.
+
+## v1.1 — INBOUND + BOOKING + BridgeConnect (NEW)
+
+`python3 run.py inbound --persona dental --caller 5550101234 --intent book --slot "2026-11-02 10:00"` → booked, staff confirm by callback, no diagnosis.
+`python3 run.py inbound --persona walkin_clinic --caller 5550101234 --intent bridge --existing-number 5195550199` → bridge to the clinic's EXISTING number, TwiML returned, dialed: false in mock.
+`python3 run.py persona list` now includes dental + walkin_clinic (8 personas total).
+
+Inbound is the opposite direction: patient calls YOU. Book a mock slot, or BridgeConnect them to the number they already have. No diagnosis, no medical advice, no patient history, no urgency triage — anything clinical bridges to staff. Real bridging happens only inside a real Twilio/Vapi call, same gate as outbound.
 
 ## v1.0 — PRODUCTION READY (code, not deployed service)
 
