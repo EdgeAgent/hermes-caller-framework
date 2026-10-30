@@ -1,0 +1,35 @@
+$ python run.py lead add Jane Seller --phone 5551234567 --source FSBO list --source-date 2026-10-29
+{
+  "id": "lead-1",
+  "name": "Jane Seller",
+  "phone": "5551234567",
+  "source": "FSBO list",
+  "source_date": "2026-10-29",
+  "verified": "unverified",
+  "notes": "",
+  "status": "new"
+}
+$ python run.py lead list
+[
+  {
+    "id": "lead-1",
+    "name": "Jane Seller",
+    "notes": "",
+    "phone": "5551234567",
+    "source": "FSBO list",
+    "source_date": "2026-10-29",
+    "status": "new",
+    "verified": "unverified"
+  }
+]
+$ python run.py status
+{
+  "approvals": 0,
+  "blocked_events": 0,
+  "bookings": 0,
+  "calls": 0,
+  "leads": 1,
+  "packets": 0,
+  "qualifications": 0,
+  "scrub_numbers": 2
+}

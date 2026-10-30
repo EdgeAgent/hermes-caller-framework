@@ -1,0 +1,28 @@
+$ python run.py lead add Scrubbed Seller --phone 5550001111 --source FSBO list --source-date 2026-10-29
+{
+  "id": "lead-2",
+  "name": "Scrubbed Seller",
+  "phone": "5550001111",
+  "source": "FSBO list",
+  "source_date": "2026-10-29",
+  "verified": "unverified",
+  "notes": "",
+  "status": "new"
+}
+$ python run.py scrub
+{
+  "scrubbed_now": 1,
+  "total_scrubbed": 1
+}
+$ python run.py dial-prep --lead lead-2
+BLOCKED (gate): blocked: no exact approval — run packet, review it, then approve --confirm <packet_id> — mock dial-prep only, no real call placed.
+ERROR: REFUSED: lead-2 is scrubbed — never call, ever
+$ python run.py dial-prep --lead lead-1
+BLOCKED (gate): blocked: no exact approval — run packet, review it, then approve --confirm <packet_id> — mock dial-prep only, no real call placed.
+{
+  "lead_id": "lead-1",
+  "phone": "5551234567",
+  "action": "would_call_mock",
+  "dialed": false
+}
+MOCK ONLY: no real number was dialed.

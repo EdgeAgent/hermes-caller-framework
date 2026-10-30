@@ -1,0 +1,74 @@
+$ python run.py qualify --mock --lead lead-1 --motivation high --timeline <30d --price flexible --condition poor
+{
+  "lead_id": "lead-1",
+  "mock": true,
+  "motivation": "high",
+  "timeline": "<30d",
+  "price": "flexible",
+  "condition": "poor",
+  "score": 100,
+  "grade": "A"
+}
+$ python run.py book --lead lead-1 --when 2026-11-02 14:00 America/Toronto
+{
+  "id": "booking-1",
+  "lead_id": "lead-1",
+  "when": "2026-11-02 14:00 America/Toronto",
+  "status": "booked-pending-human-confirmation"
+}
+$ python run.py packet --lead lead-1
+{
+  "id": "packet-1",
+  "lead_id": "lead-1",
+  "lead": {
+    "id": "lead-1",
+    "name": "Jane Seller",
+    "notes": "",
+    "phone": "5551234567",
+    "source": "FSBO list",
+    "source_date": "2026-10-29",
+    "status": "qualified",
+    "verified": "unverified"
+  },
+  "qualifications": [
+    {
+      "condition": "poor",
+      "grade": "A",
+      "lead_id": "lead-1",
+      "mock": true,
+      "motivation": "high",
+      "price": "flexible",
+      "score": 100,
+      "timeline": "<30d"
+    }
+  ],
+  "bookings": [
+    {
+      "id": "booking-1",
+      "lead_id": "lead-1",
+      "status": "booked-pending-human-confirmation",
+      "when": "2026-11-02 14:00 America/Toronto"
+    }
+  ],
+  "proposed_action_payload": {
+    "action": "send",
+    "to": "human-closer",
+    "lead_id": "lead-1",
+    "message": "Handoff packet for Jane Seller (5551234567): source FSBO list on 2026-10-29, verified=unverified. Qualifications: [{'condition': 'poor', 'grade': 'A', 'lead_id': 'lead-1', 'mock': True, 'motivation': 'high', 'price': 'flexible', 'score': 100, 'timeline': '<30d'}]. Bookings: [{'id': 'booking-1', 'lead_id': 'lead-1', 'status': 'booked-pending-human-confirmation', 'when': '2026-11-02 14:00 America/Toronto'}]. HUMAN CLOSES \u2014 do not auto-send or auto-close."
+  },
+  "note": "REVIEW THIS EXACT PACKET FIRST. Nothing is sent until approve --confirm <packet_id>."
+}
+$ python run.py approve --confirm packet-1
+APPROVING EXACT PACKET (reviewed above / in packet command output):
+{
+  "action": "send",
+  "lead_id": "lead-1",
+  "message": "Handoff packet for Jane Seller (5551234567): source FSBO list on 2026-10-29, verified=unverified. Qualifications: [{'condition': 'poor', 'grade': 'A', 'lead_id': 'lead-1', 'mock': True, 'motivation': 'high', 'price': 'flexible', 'score': 100, 'timeline': '<30d'}]. Bookings: [{'id': 'booking-1', 'lead_id': 'lead-1', 'status': 'booked-pending-human-confirmation', 'when': '2026-11-02 14:00 America/Toronto'}]. HUMAN CLOSES \u2014 do not auto-send or auto-close.",
+  "to": "human-closer"
+}
+{
+  "approved": true,
+  "packet_id": "packet-1",
+  "hash": "d8127a27a55142a8"
+}
+Approved ONLY for this exact payload. The human still closes the deal.
