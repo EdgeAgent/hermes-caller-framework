@@ -22,6 +22,14 @@
 
 Wholesale is NOT generic sales: seller leads, not buyer leads. Qualification = motivation + timeline + authority + open deal math. Probate without confirmed trustee/executor = HOLD-probate, no offer pitch, ever. Assignment fee is disclosed in the packet, never hidden. Ontario: assignment model needs a lawyer / RECO check before use. This is a style/workflow model in Kevin's own name — never presented as Maximilian Dier or Assigns, never his results, never harvested numbers.
 
+## v1.0 — PRODUCTION READY (code, not deployed service)
+
+`python3 run.py doctor` → personas, scrub file, env presence (never values), receipts chain, real-call ready yes/no.
+`python3 run.py model-qualify --lead lead-1 --provider openrouter --notes "seller wants cash in 30 days, owns outright"` → real LLM JSON, validated, never silently mock.
+`python3 run.py call --lead lead-1 --provider twilio --real --packet packet-1` → real call ONLY if packet exists in state + keys in env + scrub passed.
+
+Production checklist, honest: code is production-grade (validated model output, hash-chained receipts, doctor, .env.example, gate + scrub + packet enforced, no keys in code). Deployment is NOT done until YOU do: provider account + keys in env (Secure Vault, never chat), compliance review, DNC check, your test number first, one approved packet per real call. No real call has been placed by this repo yet.
+
 ## Persona library — NEW, elite production grade (6 style packs, 1 core)
 
 `python3 run.py persona list` → wholesale, realtor, agency, local_service, clinic, generic_sales

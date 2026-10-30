@@ -8,6 +8,9 @@ from .dialer import MockDialer
 from .wholesale import qualify_wholesale, SCRIPT
 from .real_dialer import place_real_call
 from .personas import list_personas, get_persona, score_persona
+from .model import qualify_with_model
+from .doctor import check as doctor_check
+from .receipts import append as receipt_append
 from .scrub import normalize_phone
 
 def store() -> StateStore:
@@ -51,6 +54,8 @@ def main(argv=None) -> int:
     pq = pea.add_parser("qualify"); pq.add_argument("--persona", required=True); pq.add_argument("--lead", required=True)
     pq.add_argument("--motivation", default="medium"); pq.add_argument("--timeline", default="<90d")
     pq.add_argument("--budget-fit", default="unknown"); pq.add_argument("--area-fit", default="unknown"); pq.add_argument("--capacity-fit", default="unknown")
+    d = sub.add_parser("doctor")
+    mq = sub.add_parser("model-qualify"); mq.add_argument("--lead", required=True); mq.add_argument("--provider", default="openrouter"); mq.add_argument("--notes", required=True)
     sub.add_parser("status")
     args = p.parse_args(argv)
     st = store(); state = _load_scrub_file(st, st.load())
@@ -92,7 +97,10 @@ def main(argv=None) -> int:
     if args.cmd == "call":
         lead = next((x for x in state["leads"] if x["id"] == args.lead), None)
         if not lead: print("ERROR: lead not found"); return 2
+        if args.real and not any(x["id"] == args.packet for x in state["packets"]):
+            print("BLOCKED: real call needs an existing approved packet id — run packet, review it, approve it first."); return 3
         r = place_real_call(state, lead, provider=args.provider, dry_run=not args.real, approved_packet_id=args.packet)
+        if args.real and r.get("dialed"): receipt_append(st.dir, "real-call", r)
         print(json.dumps(r, indent=2))
         if not args.real: print("DRY RUN — no call placed. First real call needs: provider account + keys in env + approved packet + YOUR test number first."); return 0
         return 0 if r.get("dialed") else 3
@@ -107,6 +115,17 @@ def main(argv=None) -> int:
             print(f"REFUSED: {lead['id']} is scrubbed — never call, ever"); return 3
         rec = {"lead_id": lead["id"], "mock": True, **score_persona(args.persona, args.motivation, args.timeline, args.budget_fit, args.area_fit, args.capacity_fit)}
         state["qualifications"].append(rec); st.save(state); print(json.dumps(rec, indent=2)); return 0
+    if args.cmd == "doctor":
+        print(json.dumps(doctor_check(), indent=2)); return 0
+    if args.cmd == "model-qualify":
+        lead = next((x for x in state["leads"] if x["id"] == args.lead), None)
+        if not lead: print("ERROR: lead not found"); return 2
+        if lead.get("status") == "scrubbed" or S.is_scrubbed(lead["phone"], state["scrub_numbers"]):
+            print(f"REFUSED: {lead['id']} is scrubbed — never call, ever"); return 3
+        try: m = qualify_with_model(args.provider, args.notes)
+        except ValueError as e: print(f"ERROR: {e}"); return 2
+        rec = {"lead_id": lead["id"], "model": True, **m}; state["qualifications"].append(rec); st.save(state)
+        receipt_append(st.dir, "model-qualify", rec); print(json.dumps(rec, indent=2)); return 0
     if args.cmd == "book":
         lead = next((x for x in state["leads"] if x["id"] == args.lead), None)
         if not lead: print("ERROR: lead not found"); return 2
