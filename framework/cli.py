@@ -6,6 +6,7 @@ from .state import StateStore
 from . import leads as L, scrub as S, gate as G
 from .dialer import MockDialer
 from .wholesale import qualify_wholesale, SCRIPT
+from .real_dialer import place_real_call
 from .scrub import normalize_phone
 
 def store() -> StateStore:
@@ -41,6 +42,8 @@ def main(argv=None) -> int:
     w.add_argument("--price", type=float, required=True); w.add_argument("--repairs", type=float, default=0)
     w.add_argument("--arv", type=float, required=True); w.add_argument("--fee", type=float, required=True)
     ws = sub.add_parser("wholesale-script"); ws.add_argument("--part", default="opening")
+    c = sub.add_parser("call"); c.add_argument("--lead", required=True); c.add_argument("--provider", default="twilio")
+    c.add_argument("--dry-run", action="store_true"); c.add_argument("--real", action="store_true"); c.add_argument("--packet", default=None)
     sub.add_parser("status")
     args = p.parse_args(argv)
     st = store(); state = _load_scrub_file(st, st.load())
@@ -79,6 +82,13 @@ def main(argv=None) -> int:
         print(json.dumps(rec, indent=2)); return 0
     if args.cmd == "wholesale-script":
         print(SCRIPT.get(args.part, "ERROR: part must be opening|motivation|open_math|probate|close_human")); return 0
+    if args.cmd == "call":
+        lead = next((x for x in state["leads"] if x["id"] == args.lead), None)
+        if not lead: print("ERROR: lead not found"); return 2
+        r = place_real_call(state, lead, provider=args.provider, dry_run=not args.real, approved_packet_id=args.packet)
+        print(json.dumps(r, indent=2))
+        if not args.real: print("DRY RUN — no call placed. First real call needs: provider account + keys in env + approved packet + YOUR test number first."); return 0
+        return 0 if r.get("dialed") else 3
     if args.cmd == "book":
         lead = next((x for x in state["leads"] if x["id"] == args.lead), None)
         if not lead: print("ERROR: lead not found"); return 2

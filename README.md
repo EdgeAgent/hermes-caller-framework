@@ -22,6 +22,12 @@
 
 Wholesale is NOT generic sales: seller leads, not buyer leads. Qualification = motivation + timeline + authority + open deal math. Probate without confirmed trustee/executor = HOLD-probate, no offer pitch, ever. Assignment fee is disclosed in the packet, never hidden. Ontario: assignment model needs a lawyer / RECO check before use. This is a style/workflow model in Kevin's own name — never presented as Maximilian Dier or Assigns, never his results, never harvested numbers.
 
+## Real phone calls — NEW (adapter built, no real call yet)
+
+`python3 run.py call --lead lead-1 --provider twilio --dry-run` → shows what WOULD be called, dialed: false. Always.
+A real call needs ALL of: (1) your own Twilio or Vapi account, (2) keys in env vars only, never in code/chat, (3) an approved packet for that exact lead, (4) scrub passed, (5) your test number first. Then: `python3 run.py call --lead lead-1 --provider twilio --real --packet packet-1`.
+No keys = no call, no approved packet = no call, scrubbed = never call. No robocall blasts, no harvested lists, DNC + opt-out respected, compliance review before any live list.
+
 ## What this is — is this an agent phone / cold caller?
 
 Yes. Plainly: **this IS an agent-phone / cold-caller framework.**
