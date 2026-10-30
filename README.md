@@ -3,7 +3,7 @@
 ![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python)
 ![License: MIT](https://img.shields.io/badge/License-MIT-2dd4bf?style=flat-square)
 ![Local-first](https://img.shields.io/badge/Local--first-yes-2dd4bf?style=flat-square)
-![Tests: 7 passing](https://img.shields.io/badge/Tests-7%20passing-3fb950?style=flat-square)
+![Tests: 43 passing](https://img.shields.io/badge/Tests-43%20passing-3fb950?style=flat-square)
 ![Status: Skeleton](https://img.shields.io/badge/Status-skeleton-ffd65a?style=flat-square)
 ![Dialer: Mock only](https://img.shields.io/badge/Dialer-mock%20only-ff7b72?style=flat-square)
 
